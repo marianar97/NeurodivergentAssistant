@@ -9,7 +9,7 @@ thanks for joining us for WWW Night! In this repo you find all the information y
 
 ## The Challenge
 ### Requirements
-- build any application using [HONC](https://honc.dev/): `pnpm createhonc-app@latest`
+- build any application using [HONC](https://honc.dev/): `npm create honc-app@latest`
 - include at least one [Cloudflare Binding](https://developers.cloudflare.com/workers/runtime-apis/bindings/)
 
 💡 Tipp: Honc already comes with a D1 Database binding
