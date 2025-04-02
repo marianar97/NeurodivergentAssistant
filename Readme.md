@@ -15,7 +15,7 @@ thanks for joining us for WWW Night! In this repo you'll find all the informatio
 > 💡 Tip: Honc already comes with a D1 Database binding
 
 ### Examples and Inspiration
-- This repo contains a folder with the example shown in the intro
+- This repo contains a folder with the example shown in the intro and an example using Cloudflare's vite plugin and react
 - [Official Honc Examples](https://github.com/fiberplane/create-honc-app/tree/main/examples)
 - [Awesome Honc list](https://github.com/fiberplane/awesome-honc)
 
