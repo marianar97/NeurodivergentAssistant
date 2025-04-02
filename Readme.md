@@ -11,6 +11,7 @@ thanks for joining us for WWW Night! In this repo you'll find all the informatio
 ### Requirements
 - Build any application using [HONC](https://honc.dev/): `npm create honc-app@latest`
 - Include at least one [Cloudflare Binding](https://developers.cloudflare.com/workers/runtime-apis/bindings/)
+- [Slides](https://docs.google.com/presentation/d/1Js6RX7ayYSPUPr00ihcb1avWAoXchqnSx-L240fgwcU/edit?slide=id.g3379a6c2c82_0_21#slide=id.g3379a6c2c82_0_21) from the intro
 
 > 💡 Tip: Honc already comes with a D1 Database binding
 
