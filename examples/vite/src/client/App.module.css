@@ -1,0 +1,14 @@
+.app {
+  width: min(600px, 100%);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.button {
+  all: unset;
+  background-color: orangered;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}

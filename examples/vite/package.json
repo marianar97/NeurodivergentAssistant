@@ -1,0 +1,40 @@
+{
+  "name": "honc-night-template",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "db:touch": "wrangler d1 execute honc-d1-database --local --command='SELECT 1'",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply honc-d1-database --local",
+    "db:migrate:prod": "ENVIRONMENT=production drizzle-kit migrate",
+    "db:seed": "tsx seed.ts",
+    "db:seed:prod": "ENVIRONMENT=production tsx seed.ts",
+    "db:setup": "npm run db:touch && npm run db:generate && npm run db:migrate && npm run db:seed",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fiberplane/hono": "0.5.2",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.41.0",
+    "hono": "^4.7.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@cloudflare/vite-plugin": "^0.1.19",
+    "@cloudflare/workers-types": "^4.20250327.0",
+    "@fiberplane/hono-otel": "^0.8.0",
+    "@libsql/client": "^0.15.2",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "drizzle-kit": "^0.30.6",
+    "drizzle-seed": "^0.3.1",
+    "tsx": "^4.19.3",
+    "vite": "^6.2.4",
+    "wrangler": "^4.6.0"
+  }
+}
