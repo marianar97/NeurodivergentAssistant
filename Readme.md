@@ -22,22 +22,18 @@ We recommend getting familiar with the stack already before the Hacknight as it 
   * If you want to add a static frontend, Hono supports rendering [JSX](https://hono.dev/docs/guides/jsx). You can also use [Cloudflare Asset Bindings](https://developers.cloudflare.com/workers/static-assets/) to serve static files
   * Cloudflare provides a [Vite plugin](https://developers.cloudflare.com/workers/vite-plugin/) ([an example](/examples/cloudflare-vite-plugin) is included in this repo).
 
-
-
 ## The Challenge
 ### Requirements
 - Build any application using [HONC](https://honc.dev/): `npm create honc-app@latest`
 - Use Neon as a database
 - Include at least one [Cloudflare Binding](https://developers.cloudflare.com/workers/runtime-apis/bindings/)
-
+- Integrate at least one Twilio [API, SDK, or service](https://twilio.com/docs)
  
-
 ### Examples and Inspiration
-- This repo contains a folder with the example shown in the intro and an example using Cloudflare's vite plugin and react
+Below are links to examples that meet most or all of the requirements of this challenge. They include the example shown in the intro and one using Cloudflare's Vite plugin with React:
+- This repo – examples are included in the [examples/ folder](/examples)
 - [Official Honc Examples](https://github.com/fiberplane/create-honc-app/tree/main/examples)
 - [Awesome Honc list](https://github.com/fiberplane/awesome-honc)
-- [Official Honc examples]()
-
 
 ## Evaluation criteria
 - Extra points for deployed apps & shared GitHub Repo
