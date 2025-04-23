@@ -5,6 +5,13 @@ import { Hono } from "hono";
 import { users, messages } from "./db/schema";
 import { eq } from "drizzle-orm";
 
+// Helper function to generate a random unique ID
+function generateUniqueId(length = 16) {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 10);
+  return `${timestamp}-${randomStr}`.slice(0, length);
+}
+
 type Bindings = {
   DATABASE_URL: string;
   BUCKET: R2Bucket;
@@ -85,27 +92,42 @@ app.post("/api/ai", async (c) => {
       content: message,
     },
   ];
-  const response = await c.env.AI.run(
+  const aiResponse = await c.env.AI.run(
     "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
     { messages: messages_for_ai }
   );
+  
+  // Extract the text from the AI response
+  let transformedMessage = "";
+  if (typeof aiResponse === 'object' && aiResponse !== null) {
+    // If the response is in the expected format
+    transformedMessage = aiResponse.response || "";
+  } else {
+    // Fallback handling for other response formats
+    transformedMessage = String(aiResponse);
+  }
+  
+  // Create a unique ID for this message
+  const messageId = generateUniqueId();
   
   // Save both the original and transformed message to the database
   try {
     const sql = neon(c.env.DATABASE_URL);
     const db = drizzle(sql);
     
+    // Use custom ID field instead of relying on auto-increment
     const [savedMessage] = await db
       .insert(messages)
       .values({
+        id: messageId,
         original_message: message,
-        transformed_message: response.response,
+        transformed_message: transformedMessage,
       })
       .returning();
       
     return c.json({
       original: message,
-      transformed: response.response,
+      transformed: transformedMessage,
       id: savedMessage.id
     });
   } catch (error) {
@@ -113,7 +135,8 @@ app.post("/api/ai", async (c) => {
     // Still return the AI response even if database storage fails
     return c.json({
       original: message,
-      transformed: response.response,
+      transformed: transformedMessage,
+      id: messageId,
       error: "Failed to save message to database"
     });
   }
@@ -135,7 +158,7 @@ app.get("/api/messages/:id", async (c) => {
   const sql = neon(c.env.DATABASE_URL);
   const db = drizzle(sql);
 
-  const message = await db.select().from(messages).where(eq(messages.id, parseInt(id))).limit(1);
+  const message = await db.select().from(messages).where(eq(messages.id, id)).limit(1);
   
   if (message.length === 0) {
     return c.json({ error: "Message not found" }, 404);

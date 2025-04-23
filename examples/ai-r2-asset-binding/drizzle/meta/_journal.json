@@ -15,6 +15,13 @@
       "when": 1745371729527,
       "tag": "0001_open_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1745372539305,
+      "tag": "0002_fuzzy_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

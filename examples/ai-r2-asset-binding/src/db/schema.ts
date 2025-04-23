@@ -11,7 +11,7 @@ export const users = pgTable('users', {
 });
 
 export const messages = pgTable('messages', {
-  id: serial('id').primaryKey(),
+  id: text('id').primaryKey(), // Using text-based ID instead of serial
   original_message: text('original_message').notNull(),
   transformed_message: text('transformed_message').notNull(),
   created_at: timestamp('created_at').notNull().defaultNow(),
