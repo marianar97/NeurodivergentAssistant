@@ -4,129 +4,271 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Registration</title>
+    <title>Jerk to Nice Transformer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 500px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+            margin: 0 5px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
+            color: #555;
         }
 
-        input[type="text"],
-        input[type="email"] {
+        textarea {
             width: 100%;
-            padding: 8px;
+            min-height: 100px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 1rem;
         }
 
-        .profile-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .profile-preview img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-
-        .submit-btn {
-            background-color: #4caf50;
+        .transform-btn {
+            background-color: #4a6bdf;
             color: white;
-            padding: 10px 15px;
+            padding: 12px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            transition: background-color 0.3s;
         }
 
-        .submit-btn:hover {
-            background-color: #45a049;
+        .transform-btn:hover {
+            background-color: #3a56b5;
+        }
+
+        .result {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .message-box {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .original {
+            background-color: #ffe6e6;
+            border-left: 4px solid #ff6666;
+        }
+
+        .transformed {
+            background-color: #e6f7e6;
+            border-left: 4px solid #66cc66;
+        }
+
+        .history {
+            margin-top: 40px;
+        }
+
+        .history-item {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 
 <body>
-    <h1>User Registration</h1>
-    <form method="post" enctype="multipart/form-data">
+    <header>
+        <h1><span class="emoji">🤬</span> Jerk to Nice <span class="emoji">😇</span></h1>
+        <p>Convert rude messages into polite corporate responses</p>
+    </header>
+
+    <div class="container">
         <div class="form-group">
-            <label for="name">Full Name:</label>
-            <input type="text" id="name" name="name" required />
+            <label for="mean-message">Enter a mean message:</label>
+            <textarea id="mean-message" placeholder="Type something mean or rude here..."></textarea>
         </div>
 
-        <div class="form-group">
-            <label for="email">Email Address:</label>
-            <input type="email" id="email" name="email" required />
+        <button id="transform-btn" class="transform-btn">Transform to Nice</button>
+
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p>Transforming message...</p>
         </div>
 
-        <div class="form-group">
-            <label for="profile-pic">Profile Picture:</label>
-            <input type="file" id="profile-pic" name="profile-pic" accept="image/*" onchange="previewImage(this)" />
-            <div class="profile-preview" id="image-preview">
-                <span>No image</span>
+        <div id="result" class="result">
+            <h2>Result</h2>
+            <div class="message-box original">
+                <h3>Original Message:</h3>
+                <p id="original-text"></p>
+            </div>
+            <div class="message-box transformed">
+                <h3>Transformed Message:</h3>
+                <p id="transformed-text"></p>
             </div>
         </div>
+    </div>
 
-        <button type="submit" class="submit-btn">Register</button>
-    </form>
+    <div class="history">
+        <h2>Recent Transformations</h2>
+        <div id="history-list"></div>
+    </div>
 
     <script>
-        function previewImage(input) {
-            const preview = document.getElementById("image-preview");
-            preview.innerHTML = "";
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-
-                reader.onload = function (e) {
-                    const img = document.createElement("img");
-                    img.src = e.target.result;
-                    preview.appendChild(img);
-                };
-
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.innerHTML = "<span>No image</span>";
+        // Transform message
+        document.getElementById('transform-btn').addEventListener('click', async () => {
+            const message = document.getElementById('mean-message').value.trim();
+            
+            if (!message) {
+                alert('Please enter a message to transform.');
+                return;
             }
-        }
-        // handle form submission
-        document.querySelector("form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
-
+            
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
             try {
-                const response = await fetch("/api/user", {
-                    method: "POST",
-                    body: formData,
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
                 });
+                
                 const data = await response.json();
-                form.reset();
-                document.getElementById("image-preview").innerHTML =
-                    "<span>No image</span>";
+                
+                // Update result
+                document.getElementById('original-text').textContent = data.original;
+                document.getElementById('transformed-text').textContent = data.transformed;
+                
+                // Show result
+                document.getElementById('result').style.display = 'block';
+                
+                // Clear input
+                document.getElementById('mean-message').value = '';
+                
+                // Load history
+                loadHistory();
+                
             } catch (error) {
-                console.error(error);
-                alert("An error occurred. Please try again later.");
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            } finally {
+                // Hide loader
+                document.getElementById('loader').style.display = 'none';
             }
         });
+        
+        // Load message history
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/messages');
+                const data = await response.json();
+                
+                const historyList = document.getElementById('history-list');
+                historyList.innerHTML = '';
+                
+                data.messages.forEach(message => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.setAttribute('data-id', message.id);
+                    
+                    const date = new Date(message.created_at);
+                    const formattedDate = date.toLocaleString();
+                    
+                    historyItem.innerHTML = `
+                        <div class="history-header">
+                            <span>ID: ${message.id}</span>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div class="message-box original">
+                            <strong>Original:</strong> ${message.original_message}
+                        </div>
+                        <div class="message-box transformed">
+                            <strong>Transformed:</strong> ${message.transformed_message}
+                        </div>
+                    `;
+                    
+                    historyList.appendChild(historyItem);
+                });
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+        
+        // Load history on page load
+        document.addEventListener('DOMContentLoaded', loadHistory);
     </script>
 </body>
 
