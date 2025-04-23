@@ -1,10 +1,18 @@
-import { pgTable, serial, text, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, timestamp } from 'drizzle-orm/pg-core';
 
 export type NewUser = typeof users.$inferInsert;
+export type NewMessage = typeof messages.$inferInsert;
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(), // This ensures auto-incrementing IDs
   name: text('name').notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   thumbnail: text('thumbnail')
+});
+
+export const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  original_message: text('original_message').notNull(),
+  transformed_message: text('transformed_message').notNull(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
 });

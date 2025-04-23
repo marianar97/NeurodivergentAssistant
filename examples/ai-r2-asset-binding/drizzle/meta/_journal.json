@@ -8,6 +8,13 @@
       "when": 1744756920688,
       "tag": "0000_useful_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1745371729527,
+      "tag": "0001_open_bishop",
+      "breakpoints": true
     }
   ]
 }

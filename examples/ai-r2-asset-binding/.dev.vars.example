@@ -1,1 +1,1 @@
-DATABASE_URL= 
+DATABASE_URL=postgresql://jerkToNice_owner:npg_XfIyKjO47VMJ@ep-red-breeze-a4ido7l9-pooler.us-east-1.aws.neon.tech/jerkToNice?sslmode=require

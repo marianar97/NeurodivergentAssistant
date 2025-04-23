@@ -1,20 +1,23 @@
-## 🪿 AI- R2 - ASSET Binding example
+## 🤬➡️😇 Jerk to Nice API
 
-This is a project created with the `create-honc-app` template.
+This is a project that converts rude, mean, or angry messages into polite, professional corporate responses.
 
-It uses Neon as a database. This example outlines Cloudflare's AI, R2 and Asset binding. 
+It uses Neon as a database, Cloudflare's AI for message conversion, R2 for asset storage, and Asset binding.
 
 ### AI Binding
 
-The AI binding is defined in the `wrangler.toml` file. In the application, the `/api/ai` endpoint uses a text-to-text LLM (Large Language Model) to generate responses.
+The AI binding is defined in the `wrangler.toml` file. In the application, the `/api/ai` endpoint uses a text-to-text LLM (Large Language Model) to convert mean messages into polite corporate responses.
 
-The endpoint receives a message and uses it as a prompt for the LLM. The model then returns a response:
+The endpoint receives a message and uses it as a prompt for the LLM with specific instructions to reformulate the message in a professional corporate tone:
 
 ```typescript
 app.post("/api/ai", async (c) => {
   const { message } = await c.req.json();
   const messages = [
-    { role: "system", content: "You are a friendly assistant" },
+    { 
+      role: "system", 
+      content: "You are a corporate communications specialist. Your job is to take rude, mean, or angry messages and convert them into polite, professional corporate responses. Maintain a formal, positive tone while addressing the core concern from the original message. Keep responses concise and professional." 
+    },
     {
       role: "user",
       content: message,

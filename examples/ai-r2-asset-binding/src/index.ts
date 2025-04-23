@@ -2,7 +2,8 @@ import { createFiberplane, createOpenAPISpec } from "@fiberplane/hono";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { Hono } from "hono";
-import { users } from "./db/schema";
+import { users, messages } from "./db/schema";
+import { eq } from "drizzle-orm";
 
 type Bindings = {
   DATABASE_URL: string;
@@ -14,7 +15,7 @@ type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.get("/", (c) => {
-  return c.text("Honc! 🪿");
+  return c.text("Jerk to Nice API - Convert mean messages to polite corporate responses!");
 });
 
 app.get("/api/users", async (c) => {
@@ -61,8 +62,24 @@ app.post("/api/user", async (c) => {
 
 app.post("/api/ai", async (c) => {
   const { message } = await c.req.json();
-  const messages = [
-    { role: "system", content: "You are a friendly assistant" },
+  const messages_for_ai = [
+    { 
+      role: "system", 
+      content: `
+      You are a corporate communications specialist. Your job is to take your boss mean and angry message and convert them into polite, professional corporate message. You must keep the original meaning of the message, but make it more positive and professional. 
+      
+      You MUST only respond with the transformed message, nothing else.
+
+      <example>
+      <original>
+      "I don't like Mariana"
+      </original>
+      <transformed>
+      "Mariana and I don't see eye to eye and I'm okay with that"
+      </transformed>
+      </example>
+      `
+    },
     {
       role: "user",
       content: message,
@@ -70,9 +87,61 @@ app.post("/api/ai", async (c) => {
   ];
   const response = await c.env.AI.run(
     "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-    { messages }
+    { messages: messages_for_ai }
   );
-  return c.json(response);
+  
+  // Save both the original and transformed message to the database
+  try {
+    const sql = neon(c.env.DATABASE_URL);
+    const db = drizzle(sql);
+    
+    const [savedMessage] = await db
+      .insert(messages)
+      .values({
+        original_message: message,
+        transformed_message: response.response,
+      })
+      .returning();
+      
+    return c.json({
+      original: message,
+      transformed: response.response,
+      id: savedMessage.id
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    // Still return the AI response even if database storage fails
+    return c.json({
+      original: message,
+      transformed: response.response,
+      error: "Failed to save message to database"
+    });
+  }
+});
+
+// Get all transformed messages
+app.get("/api/messages", async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  return c.json({
+    messages: await db.select().from(messages),
+  });
+});
+
+// Get a specific transformed message by ID
+app.get("/api/messages/:id", async (c) => {
+  const id = c.req.param("id");
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const message = await db.select().from(messages).where(eq(messages.id, parseInt(id))).limit(1);
+  
+  if (message.length === 0) {
+    return c.json({ error: "Message not found" }, 404);
+  }
+  
+  return c.json(message[0]);
 });
 
 /**
@@ -84,8 +153,9 @@ app.get("/openapi.json", c => {
   return c.json(createOpenAPISpec(app, {
     openapi: "3.0.0",
     info: {
-      title: "Honc D1 App",
+      title: "Jerk to Nice API",
       version: "1.0.0",
+      description: "An API that converts rude messages into polite corporate responses. Stores both original and transformed messages for later retrieval."
     },
   }))
 });
