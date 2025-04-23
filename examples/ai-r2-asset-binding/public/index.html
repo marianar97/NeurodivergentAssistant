@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jerk to Nice Transformer</title>
+    <title>Message Transformer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -72,6 +72,34 @@
 
         .transform-btn:hover {
             background-color: #3a56b5;
+        }
+
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background-color: #f8f9fa;
+            margin-right: 5px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background-color: white;
+            border-color: #ddd;
+            color: #4a6bdf;
+            font-weight: bold;
+        }
+
+        .tab:hover:not(.active) {
+            background-color: #e9ecef;
         }
 
         .result {
@@ -142,26 +170,59 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .hidden {
+            display: none;
+        }
+
+        .mode-description {
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #555;
+        }
     </style>
 </head>
 
 <body>
     <header>
-        <h1><span class="emoji">🤬</span> Jerk to Nice <span class="emoji">😇</span></h1>
-        <p>Convert rude messages into polite corporate responses</p>
+        <h1>Message Transformer</h1>
+        <p>Transform messages for better communication</p>
     </header>
 
     <div class="container">
-        <div class="form-group">
-            <label for="mean-message">Enter a mean message:</label>
-            <textarea id="mean-message" placeholder="Type something mean or rude here..."></textarea>
+        <div class="tab-container">
+            <div class="tab active" id="jerk-to-nice-tab">🤬 → 😇 Jerk to Nice</div>
+            <div class="tab" id="clear-language-tab">🧩 Neurodivergent-Friendly</div>
         </div>
 
-        <button id="transform-btn" class="transform-btn">Transform to Nice</button>
+        <div id="jerk-to-nice-container">
+            <div class="mode-description">
+                <strong>Jerk to Nice Mode:</strong> Converts rude or negative messages into polite, professional corporate responses.
+            </div>
+            <div class="form-group">
+                <label for="mean-message">Enter a mean message:</label>
+                <textarea id="mean-message" placeholder="Type something mean or rude here..."></textarea>
+            </div>
+            <button id="transform-btn" class="transform-btn">Transform to Nice</button>
+        </div>
+
+        <div id="clear-language-container" class="hidden">
+            <div class="mode-description">
+                <strong>Neurodivergent-Friendly Mode:</strong> Converts corporate jargon and complex language into clear, direct, and literal language. Helpful for people on the autism spectrum who prefer concrete communication.
+            </div>
+            <div class="form-group">
+                <label for="corporate-message">Enter corporate jargon or complex language:</label>
+                <textarea id="corporate-message" placeholder="Type business jargon or complex language here..."></textarea>
+            </div>
+            <button id="simplify-btn" class="transform-btn">Convert to Clear Language</button>
+        </div>
 
         <div id="loader" class="loader">
             <div class="spinner"></div>
-            <p>Transforming message...</p>
+            <p>Processing message...</p>
         </div>
 
         <div id="result" class="result">
@@ -183,7 +244,22 @@
     </div>
 
     <script>
-        // Transform message
+        // Tab switching
+        document.getElementById('jerk-to-nice-tab').addEventListener('click', () => {
+            document.getElementById('jerk-to-nice-tab').classList.add('active');
+            document.getElementById('clear-language-tab').classList.remove('active');
+            document.getElementById('jerk-to-nice-container').classList.remove('hidden');
+            document.getElementById('clear-language-container').classList.add('hidden');
+        });
+
+        document.getElementById('clear-language-tab').addEventListener('click', () => {
+            document.getElementById('clear-language-tab').classList.add('active');
+            document.getElementById('jerk-to-nice-tab').classList.remove('active');
+            document.getElementById('clear-language-container').classList.remove('hidden');
+            document.getElementById('jerk-to-nice-container').classList.add('hidden');
+        });
+
+        // Transform jerk message to nice
         document.getElementById('transform-btn').addEventListener('click', async () => {
             const message = document.getElementById('mean-message').value.trim();
             
@@ -192,12 +268,31 @@
                 return;
             }
             
+            await transformMessage(message, '/api/ai');
+            document.getElementById('mean-message').value = '';
+        });
+
+        // Simplify corporate jargon
+        document.getElementById('simplify-btn').addEventListener('click', async () => {
+            const message = document.getElementById('corporate-message').value.trim();
+            
+            if (!message) {
+                alert('Please enter a message to simplify.');
+                return;
+            }
+            
+            await transformMessage(message, '/api/ai/inverse');
+            document.getElementById('corporate-message').value = '';
+        });
+        
+        // Generic transform function
+        async function transformMessage(message, endpoint) {
             // Show loader
             document.getElementById('loader').style.display = 'block';
             document.getElementById('result').style.display = 'none';
             
             try {
-                const response = await fetch('/api/ai', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -214,9 +309,6 @@
                 // Show result
                 document.getElementById('result').style.display = 'block';
                 
-                // Clear input
-                document.getElementById('mean-message').value = '';
-                
                 // Load history
                 loadHistory();
                 
@@ -227,7 +319,7 @@
                 // Hide loader
                 document.getElementById('loader').style.display = 'none';
             }
-        });
+        }
         
         // Load message history
         async function loadHistory() {

@@ -73,7 +73,7 @@ app.post("/api/ai", async (c) => {
     { 
       role: "system", 
       content: `
-      You are a corporate communications specialist. Your job is to take your boss mean and angry message and convert them into polite, professional corporate message. You must keep the original meaning of the message, but make it more positive and professional. 
+      You are a communications specialist. Your job is to take your boss mean and angry message and convert them into polite, professional corporate message. You must keep the original meaning of the message, but make it more positive and professional. 
       
       You MUST only respond with the transformed message, nothing else.
 
@@ -85,6 +85,177 @@ app.post("/api/ai", async (c) => {
       "Mariana and I don't see eye to eye and I'm okay with that"
       </transformed>
       </example>
+
+      <example2>
+      <original>
+      "I don't have the bandwidth to do this right now"
+      </original>
+      <transformed>
+      "I don't have time for this"
+      </transformed>
+      </example2>
+      `
+    },
+    {
+      role: "user",
+      content: message,
+    },
+  ];
+  const aiResponse = await c.env.AI.run(
+    "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    { messages: messages_for_ai }
+  );
+  
+  // Extract the text from the AI response
+  let transformedMessage = "";
+  if (typeof aiResponse === 'object' && aiResponse !== null) {
+    // If the response is in the expected format
+    transformedMessage = aiResponse.response || "";
+  } else {
+    // Fallback handling for other response formats
+    transformedMessage = String(aiResponse);
+  }
+  
+  // Create a unique ID for this message
+  const messageId = generateUniqueId();
+  
+  // Save both the original and transformed message to the database
+  try {
+    const sql = neon(c.env.DATABASE_URL);
+    const db = drizzle(sql);
+    
+    // Use custom ID field instead of relying on auto-increment
+    const [savedMessage] = await db
+      .insert(messages)
+      .values({
+        id: messageId,
+        original_message: message,
+        transformed_message: transformedMessage,
+      })
+      .returning();
+      
+    return c.json({
+      original: message,
+      transformed: transformedMessage,
+      id: savedMessage.id
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    // Still return the AI response even if database storage fails
+    return c.json({
+      original: message,
+      transformed: transformedMessage,
+      id: messageId,
+      error: "Failed to save message to database"
+    });
+  }
+});
+
+
+app.post("/api/ai/inverse", async (c) => {
+  const { message } = await c.req.json();
+  const messages_for_ai = [
+    { 
+      role: "system", 
+      content: `
+      You are a neurodivergent-friendly translator. Your job is to take corporate jargon, unclear business speak, or complex professional language and translate it into clear, literal, and concise language.
+      
+      For people on the autism spectrum who may:
+      - Struggle with metaphors, idioms, and implied meanings
+      - Prefer direct, concrete communication
+      - Need clear, specific instructions without ambiguity
+      - Have difficulty with vague language or unstated expectations
+      
+      Your response should:
+      - Use simple, direct language
+      - Avoid metaphors and idioms
+      - Clearly state any implied expectations or requests
+      - Eliminate unnecessary corporate jargon
+      - you MIST be concise and use normal slang
+      
+      You MUST only respond with the simplified message, nothing else.
+
+      <example1>
+      <original>
+      "Mariana and I don't see eye to eye and I'm okay with that"
+      </original>
+      <simplified>
+      "I don't like Mariana"
+      </simplified>
+      </example1>
+
+      <example2>
+      <original>
+      "Let's circle back on this."
+      </original>
+      <simplified>
+      "I don't want to talk about this right now. "
+      </simplified>
+      </example2>
+
+      <example3>
+      <original>
+        "We'll table this for now."
+      </original>
+      <simplified>
+        "We're not discussing this right now."
+      </simplified>
+      </example3>
+
+      <example4>
+      <original>
+        "After careful consideration, we decided to pivot"
+      </original>
+      <simplified>
+        "we made a mistake"
+      </simplified>
+      </example4>
+
+
+      <example5>
+      <original>
+        "No offense, but…"
+      </original>
+      <simplified>
+          "I'm about to insult you."
+      </simplified>
+      </example5>
+
+      <example6>
+        <original>
+          "That's an…interesting take."
+        </original>
+        <simplified>
+          "I think your opinion is wrong or strange."
+        </simplified>
+      </example>
+
+      <example7>
+        <original>
+          "I'll take that under advisement."
+        </original>
+        <simplified>
+          "I'll probably ignore it."
+        </simplified>
+      </example>
+
+      <example8>
+        <original>
+          "Sounds good in theory."
+        </original>
+        <simplified>
+          "It'll never work in practice."
+        </simplified>
+      </example>
+
+      <example9>
+        <original>
+          "With all due respect…"
+        </original>
+        <simplified>
+          "I'm about to strongly disagree or criticize you."
+        </simplified>
+      </example9>
       `
     },
     {
@@ -176,9 +347,9 @@ app.get("/openapi.json", c => {
   return c.json(createOpenAPISpec(app, {
     openapi: "3.0.0",
     info: {
-      title: "Jerk to Nice API",
+      title: "Message Transformer API",
       version: "1.0.0",
-      description: "An API that converts rude messages into polite corporate responses. Stores both original and transformed messages for later retrieval."
+      description: "An API with two modes: 1) Converts rude messages into polite corporate responses, and 2) Converts corporate jargon into clear, literal language for neurodivergent users."
     },
   }))
 });
